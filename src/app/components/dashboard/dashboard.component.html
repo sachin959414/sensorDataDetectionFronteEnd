@@ -1,0 +1,181 @@
+<div class="dashboard-container">
+  <mat-toolbar color="primary">
+    <span>WTP IoT Dashboard</span>
+    <span class="spacer"></span>
+    <button mat-icon-button (click)="refreshData()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="refreshData()">Retry</button>
+  </div>
+
+  <!-- Dashboard content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    
+    <!-- Stats cards -->
+    <div class="stats-section" *ngIf="dashboardStats">
+      <mat-grid-list cols="4" rowHeight="120px">
+        <mat-grid-tile>
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-value">{{ dashboardStats.totalReadings }}</div>
+              <div class="stat-label">Total Readings</div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-value">{{ dashboardStats.activeStages }}</div>
+              <div class="stat-label">Active Stages</div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-value">{{ dashboardStats.alertCount }}</div>
+              <div class="stat-label">Alerts</div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-value">{{ oems.length }}</div>
+              <div class="stat-label">OEMs</div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Filters</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="filters">
+            <mat-form-field>
+              <mat-label>OEM</mat-label>
+              <mat-select [value]="selectedOem" (selectionChange)="onOemFilterChange($event)">
+                <mat-option value="all">All OEMs</mat-option>
+                <mat-option *ngFor="let oem of oems" [value]="oem">{{ oem }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            
+            <mat-form-field>
+              <mat-label>Parameter</mat-label>
+              <mat-select [value]="selectedParameter" (selectionChange)="onParameterFilterChange($event)">
+                <mat-option value="all">All Parameters</mat-option>
+                <mat-option *ngFor="let param of parameters" [value]="param">{{ param }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Alerts section -->
+    <div class="alerts-section" *ngIf="alerts.length > 0">
+      <mat-card class="alert-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon color="warn">warning</mat-icon>
+            Active Alerts
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="alerts-list">
+            <mat-chip-set *ngFor="let alert of alerts">
+              <mat-chip [color]="getAlertSeverityColor(alert)">
+                <mat-icon>{{ getStatusIcon(alert) }}</mat-icon>
+                {{ alert.parameterName }}: {{ alert.value }} {{ alert.unit }}
+                <span class="alert-stage">({{ alert.stageName }})</span>
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Chart section -->
+    <div class="charts-section" *ngIf="chartData.length > 0">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Parameter Distribution</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <ngx-charts-pie-chart
+            [results]="chartData"
+            [scheme]="chartColorScheme"
+            [legend]="true"
+            [explodeSlices]="false"
+            [labels]="true"
+            [doughnut]="false"
+            [arcWidth]="0.4"
+            [view]="[700, 400]">
+          </ngx-charts-pie-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Sensor readings -->
+    <div class="readings-section">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            Latest Sensor Readings
+            <mat-chip [matBadge]="filteredReadings.length" matBadgeColor="primary">
+              Filtered Results
+            </mat-chip>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="readings-grid">
+            <mat-card *ngFor="let reading of filteredReadings" 
+                      class="sensor-card" 
+                      [ngClass]="{'alert-card': reading.isAlert, 'normal-card': !reading.isAlert}">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>{{ getStatusIcon(reading) }}</mat-icon>
+                  {{ reading.parameterName }}
+                </mat-card-title>
+                <mat-card-subtitle>{{ reading.stageName }} ({{ reading.oem }})</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="reading-value">
+                  {{ reading.value }} {{ reading.unit }}
+                </div>
+                <div class="reading-details">
+                  <span *ngIf="reading.thresholdMin">Min: {{ reading.thresholdMin }}</span>
+                  <span *ngIf="reading.thresholdMax">Max: {{ reading.thresholdMax }}</span>
+                </div>
+                <div class="reading-timestamp">
+                  {{ formatTimestamp(reading.timestamp) }}
+                </div>
+                <div *ngIf="reading.equipmentName" class="equipment-name">
+                  Equipment: {{ reading.equipmentName }}
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+</div>

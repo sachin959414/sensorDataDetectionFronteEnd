@@ -1,0 +1,49 @@
+<div class="app-container">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="app-header">
+    <mat-toolbar-row>
+      <span class="app-title">
+        <mat-icon>dashboard</mat-icon>
+        {{ title }}
+      </span>
+      <span class="spacer"></span>
+      <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item routerLink="/wtp-dashboard">
+      <mat-icon>water</mat-icon>
+      <span>WTP Dashboard</span>
+    </button>
+    <button mat-menu-item routerLink="/dashboard">
+      <mat-icon>analytics</mat-icon>
+      <span>Sensor Dashboard</span>
+    </button>
+    <button mat-menu-item routerLink="/alerts">
+      <mat-icon>warning</mat-icon>
+      <span>Alerts</span>
+    </button>
+    <button mat-menu-item routerLink="/historical">
+      <mat-icon>history</mat-icon>
+      <span>Historical Data</span>
+    </button>
+  </mat-menu>
+
+  <!-- Main Content -->
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <mat-toolbar color="accent">
+      <span class="footer-text">
+        © 2024 Water Treatment Plant IoT Dashboard | 
+        Real-time monitoring and analytics
+      </span>
+    </mat-toolbar>
+  </footer>
+</div>

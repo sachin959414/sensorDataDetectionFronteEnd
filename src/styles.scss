@@ -1,0 +1,28 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* WTP Dashboard Custom Styles */
+.dashboard-container {
+  padding: 20px;
+}
+
+.dashboard-card {
+  margin-bottom: 20px;
+}
+
+.sensor-card {
+  padding: 16px;
+  margin: 8px;
+}
+
+.alert-card {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+}
+
+.normal-card {
+  background-color: #e8f5e8;
+  border-left: 4px solid #4caf50;
+}

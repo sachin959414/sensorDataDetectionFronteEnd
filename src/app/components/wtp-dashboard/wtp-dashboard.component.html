@@ -1,0 +1,748 @@
+<div class="wtp-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="title-section">
+        <div class="main-icon">💧</div>
+        <div class="title-text">
+          <h1>Water Treatment Plant Dashboard</h1>
+          <p class="subtitle">Real-time Monitoring & Control System</p>
+        </div>
+      </div>
+      
+      <div class="header-stats">
+        <div class="quick-stat" *ngFor="let stat of overviewKPIs.slice(0, 4)">
+          <div class="stat-icon">
+            <span class="icon">📊</span>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ formatKPIValue(stat) }}</div>
+            <div class="stat-label">{{ stat.name }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="process-tabs">
+    <div class="tab-header">
+      <button class="tab-button" 
+              [class.active]="selectedTabIndex === 0"
+              (click)="onTabChange(0)">
+        <span class="tab-icon">📊</span>
+        <span>P&ID Overview</span>
+      </button>
+      <button class="tab-button" 
+              [class.active]="selectedTabIndex === 1"
+              (click)="onTabChange(1)">
+        <span class="tab-icon">🎛️</span>
+        <span>Diagram Overview</span>
+      </button>
+      <button class="tab-button" 
+              *ngFor="let process of wtpProcesses; let i = index"
+              [class.active]="selectedTabIndex === i + 2"
+              (click)="onTabChange(i + 2)">
+        <span class="tab-icon">{{ getProcessEmoji(process.id) }}</span>
+        <span>{{ process.name }}</span>
+        <span *ngIf="process.status !== 'normal'" class="status-indicator">⚠️</span>
+      </button>
+    </div>
+    
+    <!-- Overview Tab Content - P&ID Diagram -->
+    <div *ngIf="selectedTabIndex === 0" class="tab-content">
+      <h2>Water Treatment Plant - Process Flow Diagram (P&ID)</h2>
+      
+      <!-- P&ID Flow Diagram -->
+      <div class="pnid-container">
+        <svg class="pnid-diagram" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background -->
+          <defs>
+            <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse">
+              <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#e8f4f8" stroke-width="1" opacity="0.6"/>
+            </pattern>
+            
+            <!-- Arrow markers -->
+            <marker id="arrowhead" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+              <polygon points="0 0, 12 4, 0 8" fill="#1976D2" stroke="#1565C0" stroke-width="1"/>
+            </marker>
+            
+            <marker id="arrowhead-small" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF6B35" />
+            </marker>
+            
+            <!-- Gradients for 3D effect -->
+            <linearGradient id="tankGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#BBDEFB;stop-opacity:1" />
+            </linearGradient>
+            
+            <linearGradient id="pipeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#42A5F5;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+            </linearGradient>
+            
+            <filter id="dropshadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+              <feOffset dx="2" dy="2" result="offset"/>
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.3"/>
+              </feComponentTransfer>
+              <feMerge> 
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/> 
+              </feMerge>
+            </filter>
+          </defs>
+          
+          <!-- Grid background -->
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          
+          <!-- Title Section -->
+          <g class="title-section">
+            <rect x="50" y="20" width="1500" height="80" fill="rgba(255,255,255,0.95)" stroke="#1976D2" stroke-width="2" rx="10" filter="url(#dropshadow)"/>
+            <text x="800" y="45" text-anchor="middle" class="main-title">WATER TREATMENT PLANT - PROCESS & INSTRUMENTATION DIAGRAM</text>
+            <text x="800" y="70" text-anchor="middle" class="subtitle">Real-time Process Monitoring & Control System | All KPIs Live Dashboard</text>
+            <text x="800" y="90" text-anchor="middle" class="subtitle">Design Flow: {{wtpProcesses[5].kpis[3].value}} {{wtpProcesses[5].kpis[3].unit}} | Status: OPERATIONAL</text>
+          </g>
+
+          <!-- RAW WATER INTAKE SECTION -->
+          <g class="process-unit intake-section" [class]="'status-' + wtpProcesses[0].status">
+            <!-- Raw Water Source -->
+            <rect x="50" y="200" width="120" height="80" fill="url(#tankGradient)" stroke="#1976D2" stroke-width="3" rx="8" filter="url(#dropshadow)"/>
+            <text x="110" y="225" text-anchor="middle" class="unit-title">RAW WATER</text>
+            <text x="110" y="242" text-anchor="middle" class="unit-title">RESERVOIR</text>
+            <text x="110" y="258" text-anchor="middle" class="unit-code">T-001</text>
+            
+            <!-- KPI Display Panel for Raw Water -->
+            <rect x="55" y="290" width="110" height="120" fill="rgba(255,255,255,0.95)" stroke="#1976D2" stroke-width="1" rx="4"/>
+            <text x="110" y="305" text-anchor="middle" class="kpi-header">INTAKE KPIs</text>
+            
+            <text x="60" y="325" class="kpi-label">Flow Rate:</text>
+            <text x="160" y="325" text-anchor="end" class="kpi-value">{{wtpProcesses[0].kpis[0].value | number:'1.1-1'}} {{wtpProcesses[0].kpis[0].unit}}</text>
+            
+            <text x="60" y="340" class="kpi-label">Water Level:</text>
+            <text x="160" y="340" text-anchor="end" class="kpi-value">{{wtpProcesses[0].kpis[1].value | number:'1.1-1'}} {{wtpProcesses[0].kpis[1].unit}}</text>
+            
+            <text x="60" y="355" class="kpi-label">Turbidity:</text>
+            <text x="160" y="355" text-anchor="end" class="kpi-value">{{wtpProcesses[0].kpis[2].value | number:'1.1-1'}} {{wtpProcesses[0].kpis[2].unit}}</text>
+            
+            <text x="60" y="370" class="kpi-label">pH Level:</text>
+            <text x="160" y="370" text-anchor="end" class="kpi-value">{{wtpProcesses[0].kpis[3].value | number:'1.2-2'}}</text>
+            
+            <text x="60" y="385" class="kpi-label">Temperature:</text>
+            <text x="160" y="385" text-anchor="end" class="kpi-value">{{wtpProcesses[0].kpis[4].value | number:'1.1-1'}}{{wtpProcesses[0].kpis[4].unit}}</text>
+            
+            <!-- Intake Pump -->
+            <g class="pump-unit">
+              <circle cx="220" cy="240" r="25" fill="#FFF" stroke="#1976D2" stroke-width="3" filter="url(#dropshadow)"/>
+              <text x="220" y="235" text-anchor="middle" class="pump-label">P-001</text>
+              <text x="220" y="250" text-anchor="middle" class="instrument-tag">INTAKE</text>
+              <text x="220" y="280" text-anchor="middle" class="kpi-small">{{wtpProcesses[0].kpis[1].value | number:'1.1-1'}}m</text>
+            </g>
+          </g>
+
+          <!-- Main Process Flow Line -->
+          <line x1="245" y1="240" x2="300" y2="240" stroke="url(#pipeGradient)" stroke-width="6" marker-end="url(#arrowhead)"/>
+          <text x="272" y="230" text-anchor="middle" class="flow-label">{{wtpProcesses[0].kpis[0].value | number:'1.1-1'}} ML/h</text>
+
+          <!-- COAGULATION & FLOCCULATION SECTION -->
+          <g class="process-unit pretreatment-section" [class]="'status-' + wtpProcesses[1].status">
+            <rect x="300" y="180" width="140" height="120" fill="#FFF8E1" stroke="#F57C00" stroke-width="3" rx="8" filter="url(#dropshadow)"/>
+            <text x="370" y="205" text-anchor="middle" class="unit-title">COAGULATION &</text>
+            <text x="370" y="225" text-anchor="middle" class="unit-title">FLOCCULATION</text>
+            <text x="370" y="245" text-anchor="middle" class="unit-code">R-002</text>
+            
+            <!-- Chemical Feed System -->
+            <g class="chemical-system">
+              <rect x="320" y="130" width="100" height="40" fill="#FFE0B2" stroke="#FF6F00" stroke-width="2" rx="4"/>
+              <text x="370" y="145" text-anchor="middle" class="chem-label">COAGULANT</text>
+              <text x="370" y="160" text-anchor="middle" class="chem-label">STORAGE</text>
+              
+              <circle cx="345" cy="185" r="12" fill="#FFF" stroke="#FF6F00" stroke-width="2"/>
+              <text x="345" y="190" text-anchor="middle" class="pump-small">P-002A</text>
+              
+              <circle cx="395" cy="185" r="12" fill="#FFF" stroke="#FF6F00" stroke-width="2"/>
+              <text x="395" y="190" text-anchor="middle" class="pump-small">P-002B</text>
+              
+              <line x1="345" y1="197" x2="345" y2="210" stroke="#FF6F00" stroke-width="2" marker-end="url(#arrowhead-small)"/>
+              <line x1="395" y1="197" x2="395" y2="210" stroke="#FF6F00" stroke-width="2" marker-end="url(#arrowhead-small)"/>
+            </g>
+            
+            <!-- KPI Panel for Pretreatment -->
+            <rect x="305" y="310" width="130" height="140" fill="rgba(255,255,255,0.95)" stroke="#F57C00" stroke-width="1" rx="4"/>
+            <text x="370" y="325" text-anchor="middle" class="kpi-header">PRETREATMENT KPIs</text>
+            
+            <text x="310" y="345" class="kpi-label">Coagulant Dosage:</text>
+            <text x="430" y="345" text-anchor="end" class="kpi-value">{{wtpProcesses[1].kpis[0].value | number:'1.1-1'}} {{wtpProcesses[1].kpis[0].unit}}</text>
+            
+            <text x="310" y="365" class="kpi-label">Screen Efficiency:</text>
+            <text x="430" y="365" text-anchor="end" class="kpi-value">{{wtpProcesses[1].kpis[1].value | number:'1.1-1'}}{{wtpProcesses[1].kpis[1].unit}}</text>
+            
+            <text x="310" y="385" class="kpi-label">Mixer Speed:</text>
+            <text x="430" y="385" text-anchor="end" class="kpi-value">{{wtpProcesses[1].kpis[2].value | number:'1.0-0'}} {{wtpProcesses[1].kpis[2].unit}}</text>
+            
+            <text x="310" y="405" class="kpi-label">Chemical Feed:</text>
+            <text x="430" y="405" text-anchor="end" class="kpi-value">{{wtpProcesses[1].kpis[3].value | number:'1.1-1'}} {{wtpProcesses[1].kpis[3].unit}}</text>
+            
+            <text x="310" y="425" class="kpi-label">pH After Coag:</text>
+            <text x="430" y="425" text-anchor="end" class="kpi-value">{{wtpProcesses[1].kpis[4].value | number:'1.1-1'}}</text>
+          </g>
+
+          <line x1="440" y1="240" x2="500" y2="240" stroke="url(#pipeGradient)" stroke-width="6" marker-end="url(#arrowhead)"/>
+
+          <!-- SEDIMENTATION SECTION -->
+          <g class="process-unit sedimentation-section" [class]="'status-' + wtpProcesses[2].status">
+            <ellipse cx="570" cy="240" rx="70" ry="50" fill="#E8F5E8" stroke="#388E3C" stroke-width="3" filter="url(#dropshadow)"/>
+            <text x="570" y="225" text-anchor="middle" class="unit-title">SEDIMENTATION</text>
+            <text x="570" y="242" text-anchor="middle" class="unit-title">CLARIFIER</text>
+            <text x="570" y="258" text-anchor="middle" class="unit-code">C-003</text>
+            
+            <!-- Sludge System -->
+            <g class="sludge-system">
+              <line x1="570" y1="290" x2="570" y2="330" stroke="#6D4C41" stroke-width="4"/>
+              <rect x="540" y="330" width="60" height="25" fill="#8D6E63" stroke="#5D4037" stroke-width="2" rx="4"/>
+              <text x="570" y="345" text-anchor="middle" class="sludge-label">SLUDGE</text>
+              <text x="570" y="358" text-anchor="middle" class="sludge-label">HOPPER</text>
+              
+              <circle cx="610" cy="342" r="10" fill="#FFF" stroke="#5D4037" stroke-width="2"/>
+              <text x="610" y="347" text-anchor="middle" class="pump-tiny">P-003</text>
+            </g>
+            
+            <!-- Sedimentation KPIs -->
+            <rect x="480" y="370" width="180" height="120" fill="rgba(255,255,255,0.95)" stroke="#388E3C" stroke-width="1" rx="4"/>
+            <text x="570" y="385" text-anchor="middle" class="kpi-header">SEDIMENTATION KPIs</text>
+            
+            <text x="485" y="405" class="kpi-label">Settling Velocity:</text>
+            <text x="655" y="405" text-anchor="end" class="kpi-value">{{wtpProcesses[2].kpis[0].value | number:'1.1-1'}} {{wtpProcesses[2].kpis[0].unit}}</text>
+            
+            <text x="485" y="425" class="kpi-label">Sludge Level:</text>
+            <text x="655" y="425" text-anchor="end" class="kpi-value">{{wtpProcesses[2].kpis[1].value | number:'1.1-1'}} {{wtpProcesses[2].kpis[1].unit}}</text>
+            
+            <text x="485" y="445" class="kpi-label">Overflow Rate:</text>
+            <text x="655" y="445" text-anchor="end" class="kpi-value">{{wtpProcesses[2].kpis[2].value | number:'1.1-1'}} {{wtpProcesses[2].kpis[2].unit}}</text>
+            
+            <text x="485" y="465" class="kpi-label">Turbidity Removal:</text>
+            <text x="655" y="465" text-anchor="end" class="kpi-value">{{wtpProcesses[2].kpis[3].value | number:'1.1-1'}}{{wtpProcesses[2].kpis[3].unit}}</text>
+            
+            <text x="485" y="485" class="kpi-label">Clarified Turbidity:</text>
+            <text x="655" y="485" text-anchor="end" class="kpi-value">{{wtpProcesses[2].kpis[4].value | number:'1.1-1'}} {{wtpProcesses[2].kpis[4].unit}}</text>
+          </g>
+
+          <line x1="640" y1="240" x2="700" y2="240" stroke="url(#pipeGradient)" stroke-width="6" marker-end="url(#arrowhead)"/>
+
+          <!-- FILTRATION SECTION -->
+          <g class="process-unit filtration-section" [class]="'status-' + wtpProcesses[3].status">
+            <rect x="700" y="180" width="120" height="120" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="3" rx="8" filter="url(#dropshadow)"/>
+            
+            <!-- Filter Media Layers -->
+            <rect x="715" y="195" width="90" height="12" fill="#9C27B0" opacity="0.2" rx="2"/>
+            <rect x="715" y="210" width="90" height="12" fill="#9C27B0" opacity="0.4" rx="2"/>
+            <rect x="715" y="225" width="90" height="12" fill="#9C27B0" opacity="0.6" rx="2"/>
+            <rect x="715" y="240" width="90" height="12" fill="#9C27B0" opacity="0.8" rx="2"/>
+            <rect x="715" y="255" width="90" height="12" fill="#9C27B0" opacity="1.0" rx="2"/>
+            
+            <text x="760" y="205" text-anchor="middle" class="filter-label">ANTHRACITE</text>
+            <text x="760" y="220" text-anchor="middle" class="filter-label">SAND</text>
+            <text x="760" y="235" text-anchor="middle" class="filter-label">FINE SAND</text>
+            <text x="760" y="250" text-anchor="middle" class="filter-label">GRAVEL</text>
+            <text x="760" y="265" text-anchor="middle" class="filter-label">SUPPORT</text>
+            
+            <text x="760" y="285" text-anchor="middle" class="unit-code">F-004</text>
+            
+            <!-- Backwash System -->
+            <g class="backwash-system">
+              <rect x="720" y="140" width="80" height="25" fill="#E1BEE7" stroke="#8E24AA" stroke-width="2" rx="4"/>
+              <text x="760" y="155" text-anchor="middle" class="backwash-label">BACKWASH</text>
+              <text x="760" y="168" text-anchor="middle" class="backwash-label">SYSTEM</text>
+              
+              <line x1="740" y1="165" x2="740" y2="180" stroke="#8E24AA" stroke-width="2" marker-end="url(#arrowhead-small)"/>
+              <line x1="780" y1="165" x2="780" y2="180" stroke="#8E24AA" stroke-width="2" marker-end="url(#arrowhead-small)"/>
+            </g>
+            
+            <!-- Filtration KPIs -->
+            <rect x="705" y="310" width="130" height="140" fill="rgba(255,255,255,0.95)" stroke="#7B1FA2" stroke-width="1" rx="4"/>
+            <text x="770" y="325" text-anchor="middle" class="kpi-header">FILTRATION KPIs</text>
+            
+            <text x="710" y="345" class="kpi-label">Loading Rate:</text>
+            <text x="830" y="345" text-anchor="end" class="kpi-value">{{wtpProcesses[3].kpis[0].value | number:'1.1-1'}} {{wtpProcesses[3].kpis[0].unit}}</text>
+            
+            <text x="710" y="365" class="kpi-label">Head Loss:</text>
+            <text x="830" y="365" text-anchor="end" class="kpi-value">{{wtpProcesses[3].kpis[1].value | number:'1.1-1'}} {{wtpProcesses[3].kpis[1].unit}}</text>
+            
+            <text x="710" y="385" class="kpi-label">Backwash Freq:</text>
+            <text x="830" y="385" text-anchor="end" class="kpi-value">{{wtpProcesses[3].kpis[2].value | number:'1.0-0'}} {{wtpProcesses[3].kpis[2].unit}}</text>
+            
+            <text x="710" y="405" class="kpi-label">Filtered Turbidity:</text>
+            <text x="830" y="405" text-anchor="end" class="kpi-value">{{wtpProcesses[3].kpis[3].value | number:'1.1-1'}} {{wtpProcesses[3].kpis[3].unit}}</text>
+            
+            <text x="710" y="425" class="kpi-label">Filter Efficiency:</text>
+            <text x="830" y="425" text-anchor="end" class="kpi-value">{{wtpProcesses[3].kpis[4].value | number:'1.1-1'}}{{wtpProcesses[3].kpis[4].unit}}</text>
+          </g>
+
+          <line x1="820" y1="240" x2="880" y2="240" stroke="url(#pipeGradient)" stroke-width="6" marker-end="url(#arrowhead)"/>
+
+          <!-- DISINFECTION SECTION -->
+          <g class="process-unit disinfection-section" [class]="'status-' + wtpProcesses[4].status">
+            <rect x="880" y="160" width="150" height="160" fill="#FFEBEE" stroke="#D32F2F" stroke-width="3" rx="8" filter="url(#dropshadow)"/>
+            
+            <text x="955" y="185" text-anchor="middle" class="unit-title">DISINFECTION</text>
+            <text x="955" y="205" text-anchor="middle" class="unit-title">CONTACT CHAMBER</text>
+            <text x="955" y="225" text-anchor="middle" class="unit-code">CC-005</text>
+            
+            <!-- Chlorination System -->
+            <g class="chlorination-system">
+              <rect x="900" y="110" width="110" height="35" fill="#FFCDD2" stroke="#C62828" stroke-width="2" rx="4"/>
+              <text x="955" y="128" text-anchor="middle" class="chem-label">CHLORINE STORAGE</text>
+              <text x="955" y="140" text-anchor="middle" class="chem-label">& DOSING SYSTEM</text>
+              
+              <circle cx="930" cy="155" r="12" fill="#FFF" stroke="#D32F2F" stroke-width="2"/>
+              <text x="930" y="160" text-anchor="middle" class="pump-small">Cl₂</text>
+              
+              <line x1="930" y1="167" x2="930" y2="180" stroke="#D32F2F" stroke-width="2" marker-end="url(#arrowhead-small)"/>
+            </g>
+            
+            <!-- UV System -->
+            <g class="uv-system">
+              <rect x="900" y="235" width="110" height="20" fill="#FFF59D" stroke="#F57F17" stroke-width="2" rx="10"/>
+              <text x="955" y="248" text-anchor="middle" class="uv-label">UV DISINFECTION LAMPS</text>
+              
+              <!-- UV Lamp representation -->
+              <rect x="910" y="240" width="90" height="10" fill="#FFEB3B" stroke="#F57C00" stroke-width="1" rx="5"/>
+              <circle cx="920" cy="245" r="2" fill="#FF6F00"/>
+              <circle cx="940" cy="245" r="2" fill="#FF6F00"/>
+              <circle cx="960" cy="245" r="2" fill="#FF6F00"/>
+              <circle cx="980" cy="245" r="2" fill="#FF6F00"/>
+            </g>
+            
+            <text x="955" y="275" text-anchor="middle" class="contact-label">CONTACT TIME: {{wtpProcesses[4].kpis[1].value}} {{wtpProcesses[4].kpis[1].unit}}</text>
+            
+            <!-- Disinfection KPIs -->
+            <rect x="885" y="330" width="140" height="140" fill="rgba(255,255,255,0.95)" stroke="#D32F2F" stroke-width="1" rx="4"/>
+            <text x="955" y="345" text-anchor="middle" class="kpi-header">DISINFECTION KPIs</text>
+            
+            <text x="890" y="365" class="kpi-label">Chlorine Residual:</text>
+            <text x="1020" y="365" text-anchor="end" class="kpi-value">{{wtpProcesses[4].kpis[0].value | number:'1.2-2'}} {{wtpProcesses[4].kpis[0].unit}}</text>
+            
+            <text x="890" y="385" class="kpi-label">Contact Time:</text>
+            <text x="1020" y="385" text-anchor="end" class="kpi-value">{{wtpProcesses[4].kpis[1].value | number:'1.1-1'}} {{wtpProcesses[4].kpis[1].unit}}</text>
+            
+            <text x="890" y="405" class="kpi-label">UV Dose:</text>
+            <text x="1020" y="405" text-anchor="end" class="kpi-value">{{wtpProcesses[4].kpis[2].value | number:'1.0-0'}} {{wtpProcesses[4].kpis[2].unit}}</text>
+            
+            <text x="890" y="425" class="kpi-label">Disinfection Eff:</text>
+            <text x="1020" y="425" text-anchor="end" class="kpi-value">{{wtpProcesses[4].kpis[3].value | number:'1.1-1'}}{{wtpProcesses[4].kpis[3].unit}}</text>
+            
+            <text x="890" y="445" class="kpi-label">E.coli Count:</text>
+            <text x="1020" y="445" text-anchor="end" class="kpi-value">{{wtpProcesses[4].kpis[4].value | number:'1.0-0'}} {{wtpProcesses[4].kpis[4].unit}}</text>
+          </g>
+
+          <line x1="1030" y1="240" x2="1100" y2="240" stroke="url(#pipeGradient)" stroke-width="6" marker-end="url(#arrowhead)"/>
+
+          <!-- CLEAR WATER STORAGE & DISTRIBUTION -->
+          <g class="process-unit storage-section" [class]="'status-' + wtpProcesses[5].status">
+            <rect x="1100" y="140" width="120" height="200" fill="url(#tankGradient)" stroke="#00838F" stroke-width="3" rx="8" filter="url(#dropshadow)"/>
+            <text x="1160" y="165" text-anchor="middle" class="unit-title">CLEAR WATER</text>
+            <text x="1160" y="185" text-anchor="middle" class="unit-title">STORAGE TANK</text>
+            <text x="1160" y="205" text-anchor="middle" class="unit-code">T-006</text>
+            
+            <!-- Dynamic Water Level Indicator -->
+            <g class="water-level">
+              <rect x="1115" y="220" width="90" height="100" fill="none" stroke="#00695C" stroke-width="2" rx="4"/>
+              <rect x="1115" [attr.y]="320 - (wtpProcesses[5].kpis[0].value * 1.0)" width="90" 
+                    [attr.height]="wtpProcesses[5].kpis[0].value * 1.0" fill="#4FC3F7" opacity="0.8" rx="4"/>
+              
+              <!-- Water level graduations -->
+              <line x1="1110" y1="240" x2="1115" y2="240" stroke="#00695C" stroke-width="1"/>
+              <text x="1105" y="245" text-anchor="end" class="level-mark">75%</text>
+              <line x1="1110" y1="270" x2="1115" y2="270" stroke="#00695C" stroke-width="1"/>
+              <text x="1105" y="275" text-anchor="end" class="level-mark">50%</text>
+              <line x1="1110" y1="300" x2="1115" y2="300" stroke="#00695C" stroke-width="1"/>
+              <text x="1105" y="305" text-anchor="end" class="level-mark">25%</text>
+            </g>
+            
+            <!-- Distribution Pumps -->
+            <g class="distribution-pumps">
+              <circle cx="1280" cy="220" r="25" fill="#FFF" stroke="#00838F" stroke-width="3" filter="url(#dropshadow)"/>
+              <text x="1280" y="215" text-anchor="middle" class="pump-label">P-006A</text>
+              <text x="1280" y="230" text-anchor="middle" class="instrument-tag">MAIN</text>
+              
+              <circle cx="1280" cy="280" r="20" fill="#FFF" stroke="#00838F" stroke-width="2"/>
+              <text x="1280" y="275" text-anchor="middle" class="pump-small">P-006B</text>
+              <text x="1280" y="290" text-anchor="middle" class="instrument-tag">STANDBY</text>
+            </g>
+            
+            <!-- Storage & Distribution KPIs -->
+            <rect x="1240" y="350" width="200" height="140" fill="rgba(255,255,255,0.95)" stroke="#00838F" stroke-width="1" rx="4"/>
+            <text x="1340" y="365" text-anchor="middle" class="kpi-header">STORAGE & DISTRIBUTION</text>
+            
+            <text x="1245" y="385" class="kpi-label">Storage Level:</text>
+            <text x="1435" y="385" text-anchor="end" class="kpi-value">{{wtpProcesses[5].kpis[0].value | number:'1.1-1'}}{{wtpProcesses[5].kpis[0].unit}}</text>
+            
+            <text x="1245" y="405" class="kpi-label">Distribution Press:</text>
+            <text x="1435" y="405" text-anchor="end" class="kpi-value">{{wtpProcesses[5].kpis[1].value | number:'1.1-1'}} {{wtpProcesses[5].kpis[1].unit}}</text>
+            
+            <text x="1245" y="425" class="kpi-label">Water Quality Idx:</text>
+            <text x="1435" y="425" text-anchor="end" class="kpi-value">{{wtpProcesses[5].kpis[2].value | number:'1.1-1'}}{{wtpProcesses[5].kpis[2].unit}}</text>
+            
+            <text x="1245" y="445" class="kpi-label">Total Production:</text>
+            <text x="1435" y="445" text-anchor="end" class="kpi-value">{{wtpProcesses[5].kpis[3].value | number:'1.0-0'}} {{wtpProcesses[5].kpis[3].unit}}</text>
+            
+            <text x="1245" y="465" class="kpi-label">Energy Consumption:</text>
+            <text x="1435" y="465" text-anchor="end" class="kpi-value">{{wtpProcesses[5].kpis[4].value | number:'1.2-2'}} {{wtpProcesses[5].kpis[4].unit}}</text>
+          </g>
+
+          <!-- Distribution Network -->
+          <line x1="1305" y1="250" x2="1380" y2="250" stroke="url(#pipeGradient)" stroke-width="8" marker-end="url(#arrowhead)"/>
+          <text x="1342" y="240" text-anchor="middle" class="flow-label">{{wtpProcesses[5].kpis[1].value}} bar</text>
+          
+          <rect x="1380" y="220" width="140" height="60" fill="#E3F2FD" stroke="#0277BD" stroke-width="3" rx="8" filter="url(#dropshadow)"/>
+          <text x="1450" y="240" text-anchor="middle" class="unit-title">DISTRIBUTION</text>
+          <text x="1450" y="260" text-anchor="middle" class="unit-title">NETWORK</text>
+          <text x="1450" y="275" text-anchor="middle" class="unit-code">GRID-007</text>
+          
+          <!-- Legend Section -->
+          <g class="legend-section" transform="translate(50, 700)">
+            <rect x="0" y="0" width="1500" height="220" fill="rgba(255,255,255,0.95)" stroke="#1976D2" stroke-width="2" rx="10" filter="url(#dropshadow)"/>
+            <text x="20" y="30" class="legend-title">LEGEND & INSTRUMENTATION KEY</text>
+            
+            <!-- Process Status -->
+            <g class="status-legend">
+              <text x="20" y="60" class="legend-header">PROCESS STATUS:</text>
+              <circle cx="40" cy="80" r="10" fill="#4CAF50" stroke="#2E7D32" stroke-width="2"/>
+              <text x="60" y="85" class="legend-text">Normal Operation</text>
+              
+              <circle cx="200" cy="80" r="10" fill="#FF9800" stroke="#F57C00" stroke-width="2"/>
+              <text x="220" y="85" class="legend-text">Warning Condition</text>
+              
+              <circle cx="380" cy="80" r="10" fill="#F44336" stroke="#D32F2F" stroke-width="2"/>
+              <text x="400" y="85" class="legend-text">Critical Alert</text>
+            </g>
+            
+            <!-- Flow & Instruments -->
+            <g class="flow-legend">
+              <text x="20" y="120" class="legend-header">FLOW & INSTRUMENTS:</text>
+              <line x1="40" y1="135" x2="90" y2="135" stroke="#1976D2" stroke-width="4" marker-end="url(#arrowhead)"/>
+              <text x="100" y="140" class="legend-text">Process Flow Direction</text>
+              
+              <circle cx="270" cy="135" r="12" fill="#FFF" stroke="#1976D2" stroke-width="2"/>
+              <text x="275" y="140" text-anchor="middle" class="pump-tiny">P</text>
+              <text x="290" y="140" class="legend-text">Centrifugal Pump</text>
+              
+              <rect x="400" y="125" width="20" height="20" fill="#E3F2FD" stroke="#1976D2" stroke-width="2" rx="2"/>
+              <text x="430" y="140" class="legend-text">Process Equipment</text>
+            </g>
+            
+            <!-- Units & Measurements -->
+            <g class="units-legend">
+              <text x="20" y="180" class="legend-header">MEASUREMENT UNITS:</text>
+              <text x="40" y="200" class="legend-text">Flow Rate: ML/h (Megaliters per hour) | Pressure: bar | Turbidity: NTU | Temperature: °C | pH: Standard Units</text>
+            </g>
+            
+            <!-- Drawing Info -->
+            <g class="drawing-info">
+              <text x="1200" y="60" class="legend-header">DRAWING INFO:</text>
+              <text x="1200" y="80" class="legend-text">Drawing No: WTP-P&ID-001</text>
+              <text x="1200" y="100" class="legend-text">Revision: Rev-C</text>
+              <text x="1200" y="120" class="legend-text">Date: {{getCurrentDate()}}</text>
+              <text x="1200" y="140" class="legend-text">Scale: NTS</text>
+              <text x="1200" y="160" class="legend-text">Status: LIVE OPERATION</text>
+            </g>
+          </g>
+        </svg>
+        
+        <!-- Real-time Status Panel -->
+        <div class="status-panel">
+          <h3>System Status</h3>
+          <div class="status-grid">
+            <div *ngFor="let process of wtpProcesses" class="status-item" [class]="'status-' + process.status">
+              <div class="status-indicator"></div>
+              <span class="status-name">{{ process.name }}</span>
+              <span class="status-value" [class]="'text-' + process.status">{{ process.status | titlecase }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Key Performance Indicators -->
+        <div class="kpi-panel">
+          <h3>Plant Performance</h3>
+          <div class="kpi-summary">
+            <div class="kpi-item" *ngFor="let kpi of overviewKPIs.slice(0, 4)">
+              <div class="kpi-icon">📊</div>
+              <div class="kpi-info">
+                <div class="kpi-value">{{ formatKPIValue(kpi) }}</div>
+                <div class="kpi-label">{{ kpi.name }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagram Overview Tab Content -->
+    <div *ngIf="selectedTabIndex === 1" class="tab-content">
+      <div class="diagram-overview">
+        <h2>Water Treatment Plant - Diagram Overview</h2>
+        
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- System Status Section -->
+          <div class="dashboard-section system-status">
+            <div class="section-header">
+              <h3>🔧 System Status</h3>
+              <span class="status-indicator overall-status">OPERATIONAL</span>
+            </div>
+            <div class="status-cards">
+              <div *ngFor="let process of wtpProcesses" 
+                   class="status-card" 
+                   [class]="'card-' + process.status">
+                <div class="card-header">
+                  <span class="process-icon">{{ getProcessEmoji(process.id) }}</span>
+                  <div class="process-info">
+                    <h4>{{ process.name }}</h4>
+                    <span class="process-code">{{ process.id }}</span>
+                  </div>
+                </div>
+                <div class="card-status">
+                  <div class="status-badge" [class]="'badge-' + process.status">
+                    {{ process.status | titlecase }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Performance Metrics -->
+          <div class="dashboard-section performance-metrics">
+            <div class="section-header">
+              <h3>📊 Key Performance Metrics</h3>
+              <button class="refresh-btn">🔄</button>
+            </div>
+            <div class="metrics-grid">
+              <div *ngFor="let kpi of overviewKPIs.slice(0, 6)" class="metric-card">
+                <div class="metric-icon">💧</div>
+                <div class="metric-content">
+                  <div class="metric-value">{{ formatKPIValue(kpi) }}</div>
+                  <div class="metric-label">{{ kpi.name }}</div>
+                  <div class="metric-trend" [class]="'trend-' + (kpi.trend || 'stable')">
+                    {{ getTrendEmoji(kpi.trend) }} {{ getTrendDescription(kpi.trend) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Process Flow Overview -->
+          <div class="dashboard-section flow-overview">
+            <div class="section-header">
+              <h3>🌊 Process Flow Overview</h3>
+              <div class="flow-controls">
+                <button class="control-btn active">Live View</button>
+                <button class="control-btn">Historical</button>
+              </div>
+            </div>
+            <div class="flow-diagram">
+              <!-- Simplified Flow Representation -->
+              <div class="flow-stage" *ngFor="let process of wtpProcesses; let i = index">
+                <div class="stage-connector" *ngIf="i > 0">
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-rate">{{ process.kpis[0] ? process.kpis[0].value : 0 }} {{ process.kpis[0] ? process.kpis[0].unit : 'ML/h' }}</div>
+                </div>
+                <div class="stage-box" [class]="'stage-' + process.status">
+                  <div class="stage-icon">{{ getProcessEmoji(process.id) }}</div>
+                  <div class="stage-name">{{ process.name }}</div>
+                  <div class="stage-kpis">
+                    <div *ngFor="let kpi of process.kpis.slice(0, 2)" class="mini-kpi">
+                      <span class="kpi-name">{{ kpi.name }}:</span>
+                      <span class="kpi-value">{{ formatKPIValue(kpi) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alarms & Notifications -->
+          <div class="dashboard-section alarms-section">
+            <div class="section-header">
+              <h3>🚨 Alarms & Notifications</h3>
+              <span class="alarm-count">{{ getActiveAlarmsCount() }}</span>
+            </div>
+            <div class="alarms-list">
+              <div *ngFor="let process of wtpProcesses" class="alarm-item">
+                <div class="alarm-icon" [class]="'icon-' + process.status">
+                  {{ process.status === 'critical' ? '🔴' : process.status === 'warning' ? '🟡' : '🟢' }}
+                </div>
+                <div class="alarm-content">
+                  <div class="alarm-title">{{ process.name }}</div>
+                  <div class="alarm-status">{{ process.status | titlecase }}</div>
+                </div>
+                <div class="alarm-time">{{ getCurrentTime() }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Equipment Status -->
+          <div class="dashboard-section equipment-status">
+            <div class="section-header">
+              <h3>⚙️ Equipment Status</h3>
+              <button class="settings-btn">Settings</button>
+            </div>
+            <div class="equipment-grid">
+              <div class="equipment-category">
+                <h4>Pumps</h4>
+                <div class="equipment-items">
+                  <div class="equipment-item" *ngFor="let i of [1,2,3,4]">
+                    <span class="equipment-icon">🔄</span>
+                    <span class="equipment-name">P-00{{ i }}</span>
+                    <span class="equipment-status online">Online</span>
+                  </div>
+                </div>
+              </div>
+              <div class="equipment-category">
+                <h4>Valves</h4>
+                <div class="equipment-items">
+                  <div class="equipment-item" *ngFor="let i of [1,2,3]">
+                    <span class="equipment-icon">🎛️</span>
+                    <span class="equipment-name">V-00{{ i }}</span>
+                    <span class="equipment-status online">Open</span>
+                  </div>
+                </div>
+              </div>
+              <div class="equipment-category">
+                <h4>Sensors</h4>
+                <div class="equipment-items">
+                  <div class="equipment-item" *ngFor="let i of [1,2,3,4,5]">
+                    <span class="equipment-icon">📡</span>
+                    <span class="equipment-name">S-00{{ i }}</span>
+                    <span class="equipment-status online">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Production Summary -->
+          <div class="dashboard-section production-summary">
+            <div class="section-header">
+              <h3>📈 Production Summary</h3>
+              <select class="time-selector">
+                <option>Today</option>
+                <option>This Week</option>
+                <option>This Month</option>
+              </select>
+            </div>
+            <div class="production-stats">
+              <div class="production-item">
+                <div class="production-icon">💧</div>
+                <div class="production-data">
+                  <div class="production-value">{{ (wtpProcesses[5] && wtpProcesses[5].kpis[3]) ? wtpProcesses[5].kpis[3].value : 0 }}</div>
+                  <div class="production-label">{{ (wtpProcesses[5] && wtpProcesses[5].kpis[3]) ? wtpProcesses[5].kpis[3].unit : 'ML' }} Produced</div>
+                </div>
+              </div>
+              <div class="production-item">
+                <div class="production-icon">⚡</div>
+                <div class="production-data">
+                  <div class="production-value">{{ (wtpProcesses[5] && wtpProcesses[5].kpis[4]) ? wtpProcesses[5].kpis[4].value : 0 }}</div>
+                  <div class="production-label">{{ (wtpProcesses[5] && wtpProcesses[5].kpis[4]) ? wtpProcesses[5].kpis[4].unit : 'kWh' }} Energy</div>
+                </div>
+              </div>
+              <div class="production-item">
+                <div class="production-icon">🎯</div>
+                <div class="production-data">
+                  <div class="production-value">98.5</div>
+                  <div class="production-label">% Efficiency</div>
+                </div>
+              </div>
+              <div class="production-item">
+                <div class="production-icon">💰</div>
+                <div class="production-data">
+                  <div class="production-value">$2,450</div>
+                  <div class="production-label">Operating Cost</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Process Detail Tabs -->
+    <div *ngFor="let process of wtpProcesses; let i = index" 
+         [style.display]="selectedTabIndex === i + 2 ? 'block' : 'none'" 
+         class="tab-content">
+      
+      <div class="process-detail">
+        <!-- Process Header -->
+        <div class="process-detail-header">
+          <div class="process-title">
+            <div class="large-icon">{{ getProcessEmoji(process.id) }}</div>
+            <div class="title-info">
+              <h2>{{ process.name }}</h2>
+              <div class="status-badge" [class]="'badge-' + process.status">
+                <span>{{ process.status | titlecase }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="process-actions">
+            <button class="action-btn primary">
+              <span>🔄</span>
+              Refresh
+            </button>
+            <button class="action-btn">
+              <span>⚙️</span>
+              Configure
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+          <div *ngFor="let kpi of process.kpis" class="kpi-card" [class]="'kpi-' + getKPIStatus(kpi)">
+            <div class="kpi-content">
+              <div class="kpi-header">
+                <h3 class="kpi-name">{{ kpi.name }}</h3>
+                <span class="trend-icon">{{ getTrendEmoji(kpi.trend) }}</span>
+              </div>
+              
+              <div class="kpi-main">
+                <div class="kpi-gauge-container">
+                  <!-- Circular Progress Gauge -->
+                  <div class="circular-gauge">
+                    <div class="progress-circle large" [style.--progress]="getKPIProgressValue(kpi) + '%'">
+                      <div class="gauge-center">
+                        <div class="gauge-value">{{ formatKPIValue(kpi) }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="kpi-details">
+                  <div class="kpi-targets" *ngIf="kpi.target">
+                    <div class="target-item">
+                      <span class="label">Target:</span>
+                      <span class="value">{{ kpi.target }} {{ kpi.unit }}</span>
+                    </div>
+                    <div class="range-item" *ngIf="kpi.min !== undefined && kpi.max !== undefined">
+                      <span class="label">Range:</span>
+                      <span class="value">{{ kpi.min }} - {{ kpi.max }} {{ kpi.unit }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Mini trend indicator -->
+                  <div class="mini-trend">
+                    <div class="trend-label">24h Trend</div>
+                    <div class="trend-indicator">
+                      {{ getTrendDescription(kpi.trend) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="chart-container" [style.height.px]="height">
+  
+  <!-- Chart Type Controls -->
+  <div class="chart-controls">
+    <mat-button-toggle-group [(value)]="chartType" 
+                             (change)="updateChartData()" 
+                             class="chart-type-toggle">
+      <mat-button-toggle value="line" matTooltip="Line Chart">
+        <mat-icon>show_chart</mat-icon>
+      </mat-button-toggle>
+      <mat-button-toggle value="bar" matTooltip="Bar Chart">
+        <mat-icon>bar_chart</mat-icon>
+      </mat-button-toggle>
+      <mat-button-toggle value="pie" matTooltip="Pie Chart">
+        <mat-icon>pie_chart</mat-icon>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Line Chart - Only working chart type -->
+  <ngx-charts-line-chart 
+    *ngIf="chartType === 'line' && timeSeriesData.length > 0"
+    [view]="view"
+    [results]="timeSeriesData"
+    [scheme]="colorScheme"
+    [legend]="showLegend"
+    [xAxis]="showXAxis"
+    [yAxis]="showYAxis"
+    [autoScale]="true"
+    [timeline]="true"
+    [animations]="true"
+    (select)="onChartSelect($event)">
+  </ngx-charts-line-chart>
+
+  <!-- Simple data display for other chart types -->
+  <div *ngIf="chartType !== 'line' && chartData.length > 0" class="simple-data-display">
+    <h3>{{ parameter || 'Sensor Data' }} ({{ chartType }} view)</h3>
+    <div class="data-grid">
+      <div *ngFor="let item of chartData" class="data-item">
+        <mat-card class="data-card">
+          <mat-card-header>
+            <mat-card-title>{{ item.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="data-value">{{ item.value }}</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Data Message -->
+  <div *ngIf="!chartData.length && !timeSeriesData.length" class="no-data-message">
+    <mat-icon>info</mat-icon>
+    <p>No data available for {{ parameter || 'the selected parameters' }}</p>
+  </div>
+
+</div>
